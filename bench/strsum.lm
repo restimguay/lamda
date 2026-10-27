@@ -1,0 +1,12 @@
+// Sum every number that follows `ms=`.
+fn main() {
+    be mut rest = read_file("data/log.txt");
+    be mut total = 0;
+    be mut at = find(rest, "ms=");
+    while at >= 0 {
+        rest = rest[at + 3..];
+        total = total + parse(rest);
+        at = find(rest, "ms=");
+    }
+    print(total);
+}

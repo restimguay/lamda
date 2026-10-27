@@ -1,0 +1,19 @@
+// Count primes below 20 million, one byte per flag.
+fn main() {
+    be n = 20000000;
+    be composite = bytes(n);
+    be mut count = 0;
+    be mut i = 2;
+    while i < n {
+        if composite[i] == 0 {
+            count = count + 1;
+            be mut j = i * i;
+            while j < n {
+                composite[j] = 1;
+                j = j + i;
+            }
+        }
+        i = i + 1;
+    }
+    print(count);
+}

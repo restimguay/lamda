@@ -1,0 +1,40 @@
+// Strings: immutable bytes; slices share memory with the original.
+
+// How many times `needle` occurs in `s`.
+fn occurrences(s: str, needle: str) -> int {
+    be mut total = 0;
+    be mut rest = s;
+    be mut at = find(rest, needle);
+    while at >= 0 {
+        total = total + 1;
+        rest = rest[at + len(needle)..];
+        at = find(rest, needle);
+    }
+    total
+}
+
+fn repeat(s: str, n: int) -> str {
+    if n == 0 { "" } else { s + repeat(s, n - 1) }
+}
+
+fn main() {
+    be greeting = "hello, world";
+    print(greeting);                          // hello, world
+    print(len(greeting));                     // 12
+    print(greeting[0]);                       // 104 (the byte 'h')
+    print(greeting[7..]);                     // world
+    print(greeting[..5] + "!");               // hello!
+    print(greeting[7..12] == "world");        // true
+
+    print(find(greeting, "o"));               // 4
+    print(find(greeting, "xyz"));             // -1
+    print(occurrences("banana", "an"));       // 2
+
+    print(parse("42 apples") + 1);            // 43
+    print(str(-7) + "°C");                    // -7°C (UTF-8 passes through)
+    print("tab\there, quote \"q\", hex \x41");
+    print(repeat("ab", 3) | len);             // 6
+
+    be me = read_file("examples/strings.lm");
+    print(find(me, "fn main") > 0);           // true
+}

@@ -1,0 +1,11 @@
+[package]
+name = "rust-regex-bench"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+regex = "1"
+
+[profile.release]
+panic = "abort"

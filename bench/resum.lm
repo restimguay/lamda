@@ -1,0 +1,4 @@
+// Sum the number in every `ms=` match.
+fn main() {
+    read_file("data/log.txt") | fold_matches(`ms=\d+`, 0, \acc, m: str -> acc + parse(m[3..])) | print;
+}

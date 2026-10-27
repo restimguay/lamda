@@ -1,0 +1,49 @@
+// The pipe `|` passes the value on its left as the first argument on its right.
+
+fn range(n: int) -> arr {
+    be xs = array(n);
+    be mut i = 0;
+    while i < n { xs[i] = i + 1; i = i + 1; }
+    xs
+}
+
+fn map(xs: arr, f: fn(int) -> int) -> arr {
+    be out = array(len(xs));
+    be mut i = 0;
+    while i < len(xs) { out[i] = f(xs[i]); i = i + 1; }
+    out
+}
+
+fn keep(xs: arr, f: fn(int) -> bool) -> arr {
+    be mut count = 0;
+    be mut i = 0;
+    while i < len(xs) { if f(xs[i]) { count = count + 1; } i = i + 1; }
+    be out = array(count);
+    be mut j = 0;
+    i = 0;
+    while i < len(xs) { if f(xs[i]) { out[j] = xs[i]; j = j + 1; } i = i + 1; }
+    out
+}
+
+fn sum(xs: arr) -> int {
+    be mut total = 0;
+    be mut i = 0;
+    while i < len(xs) { total = total + xs[i]; i = i + 1; }
+    total
+}
+
+fn add(a: int, b: int) -> int { a + b }
+
+fn adder(n: int) -> fn(int) -> int { \x -> x + n }
+
+fn main() {
+    // Sum of the squares of the even numbers in 1..=10: 4 + 16 + 36 + 64 + 100.
+    range(10) | keep(\x -> x % 2 == 0) | map(\x -> x * x) | sum | print;   // 220
+
+    3 | add(4) | print;                  // add(3, 4) = 7
+    range(5) | len | print;              // 5
+    1 + 2 | print;                       // `|` binds loosest: print(1 + 2) = 3
+    10 | (adder(5)) | print;             // parentheses: call the closure adder(5) with 10 = 15
+    6 | (\x -> x * 7) | print;           // 42
+    false || true | print;               // `||` is still "or": true
+}

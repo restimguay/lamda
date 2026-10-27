@@ -1,0 +1,71 @@
+// First-class functions and closures.
+
+fn apply_twice(f: fn(int) -> int, x: int) -> int {
+    f(f(x))
+}
+
+fn make_adder(n: int) -> fn(int) -> int {
+    \x -> x + n
+}
+
+fn compose(f: fn(int) -> int, g: fn(int) -> int) -> fn(int) -> int {
+    \x -> g(f(x))
+}
+
+// Calls `f` on every element in place.
+fn map(xs: arr, f: fn(int) -> int) {
+    be mut i = 0;
+    while i < len(xs) {
+        xs[i] = f(xs[i]);
+        i = i + 1;
+    }
+}
+
+fn fold(xs: arr, init: int, f: fn(int, int) -> int) -> int {
+    be mut acc = init;
+    be mut i = 0;
+    while i < len(xs) {
+        acc = f(acc, xs[i]);
+        i = i + 1;
+    }
+    acc
+}
+
+fn square(x: int) -> int { x * x }
+
+fn main() {
+    print(apply_twice(\x -> x * 3, 7));            // 63
+    print(make_adder(10)(5));                      // 15
+    print(apply_twice(square, 3));                 // 81: named functions are values
+
+    be inc_then_square = compose(make_adder(1), square);
+    print(inc_then_square(4));                     // 25
+
+    // Captures are copied when the closure is created.
+    be mut base = 100;
+    be add_base = \x -> x + base;
+    base = 0;
+    print(add_base(1));                            // 101
+
+    // Nested lambdas capture through each level.
+    be k = 2;
+    be curried = \a -> \b -> a * b * k;
+    print(curried(3)(4));                          // 24
+
+    // Arrays are shared, so closures can fill them.
+    be xs = array(5);
+    be fill = \start -> {
+        be mut i = 0;
+        while i < len(xs) { xs[i] = start + i; i = i + 1; }
+    };
+    fill(1);
+    map(xs, \x -> x * x);
+    print(fold(xs, 0, \acc, x -> acc + x));        // 1+4+9+16+25 = 55
+
+    // `return` inside a lambda returns from the lambda.
+    be clamp = \x -> { if x > 10 { return 10; } x };
+    print(clamp(50) + clamp(3));                   // 13
+
+    be is_even = \n -> n % 2 == 0;
+    print(is_even(4) && !is_even(7));              // true
+}

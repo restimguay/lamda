@@ -1,0 +1,48 @@
+// Garbage collector torture test: keep values alive only through closures,
+// slices and nested closures while churning out garbage, then check them all.
+
+fn make_greeter(name: str) -> fn(str) -> str {
+    be prefix = "hello, " + name;
+    \suffix: str -> prefix + suffix
+}
+
+// Allocates and drops `n` short strings; returns their total length.
+fn churn(n: int) -> int {
+    be mut i = 0;
+    be mut total = 0;
+    while i < n {
+        total = total + len(str(i) + "x");
+        i = i + 1;
+    }
+    total
+}
+
+fn sum(xs: arr) -> int {
+    be mut i = 0;
+    be mut total = 0;
+    while i < len(xs) { total = total + xs[i]; i = i + 1; }
+    total
+}
+
+fn main() {
+    be greet = make_greeter(str(42) + "!");
+    // Only an interior pointer keeps this string alive.
+    be tail = (str(987654321) + "abcdef")[9..15];
+    be big = array(100000);
+    be mut i = 0;
+    while i < len(big) { big[i] = i * 3; i = i + 1; }
+    be shout = \s: str -> greet(s) + tail + "!";
+
+    print(churn(30000));
+    be mut rounds = 0;
+    while rounds < 20 {
+        be scratch = array(50000);   // large arrays that die every round
+        scratch[0] = rounds;
+        rounds = rounds + 1;
+    }
+
+    print(greet("?"));
+    print(tail);
+    print(shout("."));
+    print(sum(big));
+}

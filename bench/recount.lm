@@ -1,0 +1,4 @@
+// Count matches of a pattern with a literal prefix.
+fn main() {
+    read_file("data/log.txt") | count(`status=5\d\d`) | print;
+}

@@ -1,0 +1,23 @@
+// Regex literals are written in backticks and compiled to DFAs ahead of time.
+
+fn add_number(total: int, m: str) -> int { total + parse(m) }
+
+fn main() {
+    be log = "INFO user=7 status=200 ms=12\nERROR user=9 status=503 ms=480\nWARN user=3 status=404 ms=95\n";
+
+    print(log | matches(`status=5\d\d`));               // true
+    print(log | count(`status=[45]\d\d`));              // 2
+    print(log | find(`ERROR|WARN`));                    // 29
+    print(log | extract(`user=\d+ status=5\d\d`));      // user=9 status=503
+
+    // Sum every `ms=` value: fold over the matches with a named function or a lambda.
+    print(log | fold_matches(`ms=\d+`, 0, \acc, m: str -> acc + parse(m[3..])));  // 587
+    print("10,20,x,30" | fold_matches(`\d+`, 0, add_number));                       // 60
+
+    // Regexes are values: pass them around like anything else.
+    be level = `^(INFO|WARN|ERROR) `;
+    print("WARN disk" | matches(level));                // true
+    print("note: WARN" | matches(level));               // false: `^` anchors to the start
+    print("a1b22c333" | extract(`[a-z]\d{3}$`));        // c333
+    print("no digits here" | find(`\d`));               // -1
+}

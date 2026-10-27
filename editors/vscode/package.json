@@ -1,0 +1,75 @@
+{
+  "name": "lamda",
+  "displayName": "lamda",
+  "description": "Syntax highlighting, error checking and run command for the lamda language",
+  "version": "0.1.0",
+  "publisher": "lamda-lang",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Programming Languages"],
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:lamda"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "lamda",
+        "aliases": ["lamda"],
+        "extensions": [".lm"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lamda",
+        "scopeName": "source.lamda",
+        "path": "./syntaxes/lamda.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "lamda",
+        "path": "./snippets.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "lamda.run",
+        "title": "lamda: Run File",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "lamda.run",
+          "when": "editorLangId == lamda"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "lamda.run",
+        "key": "ctrl+f5",
+        "mac": "cmd+f5",
+        "when": "editorLangId == lamda"
+      }
+    ],
+    "configuration": {
+      "title": "lamda",
+      "properties": {
+        "lamda.compilerPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the lamda compiler. When empty, uses target/release/lamda in the workspace if it exists, otherwise `lamda` on PATH."
+        },
+        "lamda.checkOnType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Type-check as you type. When off, files are checked on open and save only."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+// Count matches of a pattern that can start at almost any byte.
+fn main() {
+    read_file("data/log.txt") | count(`[a-z]+=\d{4}`) | print;
+}

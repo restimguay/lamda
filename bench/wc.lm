@@ -1,0 +1,18 @@
+// Count lines and words (runs of non-space bytes), one byte at a time.
+fn main() {
+    be s = read_file("data/log.txt");
+    be mut lines = 0;
+    be mut words = 0;
+    be mut in_word = false;
+    be mut i = 0;
+    while i < len(s) {
+        be c = s[i];
+        if c == 10 { lines = lines + 1; }
+        be space = c == 32 || c == 10 || c == 9;
+        if !space && !in_word { words = words + 1; }
+        in_word = !space;
+        i = i + 1;
+    }
+    print(lines);
+    print(words);
+}

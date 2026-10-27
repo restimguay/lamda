@@ -1,0 +1,5 @@
+/target
+/editors/vscode/*.vsix
+/bench/data/
+/bench/rust-regex/target
+/bench/rust-regex/Cargo.lock

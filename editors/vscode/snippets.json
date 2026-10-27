@@ -1,0 +1,43 @@
+{
+  "Function": {
+    "prefix": "fn",
+    "body": ["fn ${1:name}(${2:x: int}) -> ${3:int} {", "\t$0", "}"],
+    "description": "Function definition"
+  },
+  "Main": {
+    "prefix": "main",
+    "body": ["fn main() {", "\t$0", "}"],
+    "description": "Program entry point"
+  },
+  "Be": {
+    "prefix": "be",
+    "body": ["be ${1:name} = $0;"],
+    "description": "Immutable binding"
+  },
+  "Be mut": {
+    "prefix": "bem",
+    "body": ["be mut ${1:name} = $0;"],
+    "description": "Mutable binding"
+  },
+  "If else": {
+    "prefix": "ife",
+    "body": ["if ${1:cond} {", "\t$2", "} else {", "\t$0", "}"],
+    "description": "If-else expression"
+  },
+  "While counter": {
+    "prefix": "fori",
+    "body": [
+      "be mut ${1:i} = 0;",
+      "while $1 < ${2:n} {",
+      "\t$0",
+      "\t$1 = $1 + 1;",
+      "}"
+    ],
+    "description": "Counting while loop"
+  },
+  "Lambda": {
+    "prefix": "lam",
+    "body": ["\\\\${1:x} -> ${0:$1}"],
+    "description": "Lambda expression"
+  }
+}

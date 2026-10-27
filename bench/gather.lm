@@ -1,0 +1,24 @@
+// Data-dependent indexing: the index comes from another array, so a
+// bounds-checked language cannot prove the access is in range.
+fn main() {
+    be n = 1048576;
+    be perm = array(n);
+    be vals = array(n);
+    be mut i = 0;
+    while i < n {
+        perm[i] = (i * 7919 + 13) % n;
+        vals[i] = i % 1000;
+        i = i + 1;
+    }
+    be mut sum = 0;
+    be mut round = 0;
+    while round < 300 {
+        be mut k = 0;
+        while k < n {
+            sum = sum + vals[perm[k]];
+            k = k + 1;
+        }
+        round = round + 1;
+    }
+    print(sum);
+}

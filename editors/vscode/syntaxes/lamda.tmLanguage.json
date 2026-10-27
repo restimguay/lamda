@@ -1,0 +1,257 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "lamda",
+  "scopeName": "source.lamda",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#regex"
+    },
+    {
+      "include": "#function-definition"
+    },
+    {
+      "include": "#function-type"
+    },
+    {
+      "include": "#lambda"
+    },
+    {
+      "include": "#keyword"
+    },
+    {
+      "include": "#constant"
+    },
+    {
+      "include": "#type-annotation"
+    },
+    {
+      "include": "#call"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#operator"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "match": "//.*$",
+      "name": "comment.line.double-slash.lamda"
+    },
+    "function-definition": {
+      "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "storage.type.function.lamda"
+        },
+        "2": {
+          "name": "entity.name.function.lamda"
+        }
+      }
+    },
+    "function-type": {
+      "match": "\\b(fn)\\s*(?=\\()",
+      "captures": {
+        "1": {
+          "name": "storage.type.function.lamda"
+        }
+      }
+    },
+    "lambda": {
+      "begin": "(\\\\)",
+      "beginCaptures": {
+        "1": {
+          "name": "storage.type.function.lambda.lamda"
+        }
+      },
+      "end": "(->)",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.operator.arrow.lamda"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#function-type"
+        },
+        {
+          "include": "#builtin-type"
+        },
+        {
+          "match": "[A-Za-z_][A-Za-z0-9_]*",
+          "name": "variable.parameter.lamda"
+        },
+        {
+          "include": "#punctuation"
+        }
+      ]
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "match": "\\b(if|else|while|return)\\b",
+          "name": "keyword.control.lamda"
+        },
+        {
+          "match": "\\b(be)\\b",
+          "name": "storage.type.lamda"
+        },
+        {
+          "match": "\\b(mut)\\b",
+          "name": "storage.modifier.mut.lamda"
+        }
+      ]
+    },
+    "constant": {
+      "match": "\\b(true|false)\\b",
+      "name": "constant.language.boolean.lamda"
+    },
+    "builtin-type": {
+      "match": "\\b(int|bool|arr|bytes|str|re)\\b",
+      "name": "support.type.primitive.lamda"
+    },
+    "type-annotation": {
+      "patterns": [
+        {
+          "match": "(:|->)\\s*(int|bool|arr|bytes|str|re)\\b",
+          "captures": {
+            "1": {
+              "name": "punctuation.separator.type.lamda"
+            },
+            "2": {
+              "name": "support.type.primitive.lamda"
+            }
+          }
+        },
+        {
+          "comment": "Types inside function types, e.g. fn(int, bytes) -> int",
+          "match": "(?<=[(,])\\s*(int|bool|arr|bytes|str|re)\\b(?=\\s*[,)])",
+          "captures": {
+            "1": {
+              "name": "support.type.primitive.lamda"
+            }
+          }
+        }
+      ]
+    },
+    "call": {
+      "patterns": [
+        {
+          "match": "\\b(print|array|bytes|len|str|parse|read_file|find|matches|extract|count|fold_matches)\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "support.function.builtin.lamda"
+            }
+          }
+        },
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.call.lamda"
+            }
+          }
+        }
+      ]
+    },
+    "number": {
+      "match": "\\b\\d[\\d_]*\\b",
+      "name": "constant.numeric.integer.lamda"
+    },
+    "operator": {
+      "patterns": [
+        {
+          "match": "\\.\\.",
+          "name": "keyword.operator.range.lamda"
+        },
+        {
+          "match": "->",
+          "name": "keyword.operator.arrow.lamda"
+        },
+        {
+          "match": "==|!=|<=|>=|<|>",
+          "name": "keyword.operator.comparison.lamda"
+        },
+        {
+          "match": "&&|\\|\\||!",
+          "name": "keyword.operator.logical.lamda"
+        },
+        {
+          "match": "\\|",
+          "name": "keyword.operator.pipe.lamda"
+        },
+        {
+          "match": "\\+|-|\\*|/|%",
+          "name": "keyword.operator.arithmetic.lamda"
+        },
+        {
+          "match": "=",
+          "name": "keyword.operator.assignment.lamda"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "match": ";",
+          "name": "punctuation.terminator.statement.lamda"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.comma.lamda"
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.type.lamda"
+        }
+      ]
+    },
+    "string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.lamda",
+      "patterns": [
+        {
+          "match": "\\\\(?:[ntr0\\\\\"]|x[0-9A-Fa-f]{2})",
+          "name": "constant.character.escape.lamda"
+        },
+        {
+          "match": "\\\\.",
+          "name": "invalid.illegal.escape.lamda"
+        }
+      ]
+    },
+    "regex": {
+      "begin": "`",
+      "end": "`",
+      "name": "string.regexp.lamda",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.lamda"
+        },
+        {
+          "match": "[*+?|]|\\{\\d+(,\\d*)?\\}",
+          "name": "keyword.operator.quantifier.regexp.lamda"
+        },
+        {
+          "match": "[()\\[\\]^$.]",
+          "name": "punctuation.definition.group.regexp.lamda"
+        }
+      ]
+    }
+  }
+}

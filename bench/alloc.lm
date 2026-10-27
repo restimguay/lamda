@@ -1,0 +1,11 @@
+// Allocation-heavy: format 5 million integers as strings and read them back.
+fn main() {
+    be mut total = 0;
+    be mut i = 0;
+    while i < 5000000 {
+        be s = str(i) + ",";
+        total = total + len(s) + s[0];
+        i = i + 1;
+    }
+    print(total);
+}

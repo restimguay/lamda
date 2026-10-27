@@ -1,0 +1,4 @@
+// Count matches of a pattern that starts with an alternation (no common prefix).
+fn main() {
+    read_file("data/log.txt") | count(`(ERROR|WARN) +user=\d+ path=/api/(items|orders)/\d+`) | print;
+}

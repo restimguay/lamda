@@ -1,0 +1,13 @@
+// Count occurrences of a substring.
+fn main() {
+    be needle = "status=500";
+    be mut rest = read_file("data/log.txt");
+    be mut total = 0;
+    be mut at = find(rest, needle);
+    while at >= 0 {
+        total = total + 1;
+        rest = rest[at + len(needle)..];
+        at = find(rest, needle);
+    }
+    print(total);
+}

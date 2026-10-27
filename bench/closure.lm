@@ -1,0 +1,28 @@
+// A higher-order fold called with a fresh capturing closure each round.
+fn fold(xs: arr, init: int, f: fn(int, int) -> int) -> int {
+    be mut acc = init;
+    be mut i = 0;
+    while i < len(xs) {
+        acc = f(acc, xs[i]);
+        i = i + 1;
+    }
+    acc
+}
+
+fn main() {
+    be n = 1000000;
+    be xs = array(n);
+    be mut i = 0;
+    while i < n {
+        xs[i] = i;
+        i = i + 1;
+    }
+    be mut total = 0;
+    be mut round = 0;
+    while round < 300 {
+        be k = round;
+        total = total + fold(xs, 0, \acc, x -> acc + (x * k) % 7);
+        round = round + 1;
+    }
+    print(total);
+}

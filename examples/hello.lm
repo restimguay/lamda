@@ -1,0 +1,31 @@
+// Recursion, if-as-expression, and early return.
+fn fib(n: int) -> int {
+    if n < 2 { n } else { fib(n - 1) + fib(n - 2) }
+}
+
+fn sign(x: int) -> int {
+    if x < 0 { return -1; }
+    if x == 0 { 0 } else { 1 }
+}
+
+fn main() {
+    print(fib(20));
+    print(sign(-7));
+    print(sign(0));
+
+    be mut total = 0;
+    be mut i = 1;
+    while i <= 10 {
+        total = total + i * i;
+        i = i + 1;
+    }
+    print(total);
+
+    be xs = array(5);
+    xs[2] = 42;
+    print(xs[2] + len(xs));
+
+    be x = 1;
+    be x = x + 1; // shadowing
+    print(x == 2 && !false);
+}
