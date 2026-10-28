@@ -1,6 +1,6 @@
 // Count primes below 20 million.
 fn main() {
-    let n: i64 = std::hint::black_box(20_000_000);
+    let n: i64 = 20_000_000;
     let mut composite = vec![0i64; n as usize];
     let mut count = 0;
     let mut i = 2;

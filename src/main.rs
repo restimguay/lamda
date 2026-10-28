@@ -43,7 +43,7 @@ fn compile_file(path: &Path) -> String {
         .unwrap_or_else(|e| fail(format!("cannot read {}: {e}", path.display())));
     let result = lexer::lex(&src)
         .and_then(parser::parse)
-        .and_then(|funcs| compile::to_c(&funcs));
+        .and_then(|program| compile::to_c(&program));
     result.unwrap_or_else(|e| match e.line {
         Some(line) => fail(format!("{}:{line}: {}", path.display(), e.msg)),
         None => fail(format!("{}: {}", path.display(), e.msg)),
@@ -58,10 +58,12 @@ fn build(c_src: &str, out: &Path) {
     let cc = std::env::var("LAMDA_CC").unwrap_or_else(|_| "cc".to_string());
     let extra = std::env::var("LAMDA_CFLAGS").unwrap_or_default();
     let status = Command::new(&cc)
-        // -fwrapv gives integer overflow the same wrapping semantics as Rust release builds.
-        .args(["-O3", "-march=native", "-fwrapv", "-w", "-o"])
+        // -fwrapv gives integer overflow the same wrapping semantics as Rust release builds;
+        // -ffp-contract=off keeps float results identical to Rust's (no fused multiply-add).
+        .args(["-O3", "-march=native", "-fwrapv", "-ffp-contract=off", "-w", "-o"])
         .arg(out)
         .arg(&c_path)
+        .arg("-lm")
         .args(extra.split_whitespace())
         .status()
         .unwrap_or_else(|e| fail(format!("cannot run C compiler `{cc}`: {e}")));

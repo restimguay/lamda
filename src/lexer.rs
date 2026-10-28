@@ -3,10 +3,12 @@ use crate::Error;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Tok {
     Int(i64),
+    Float(f64),
     Str(Vec<u8>),
     Regex(String),
     Ident(String),
     Fn,
+    Type,
     Be,
     Mut,
     If,
@@ -26,6 +28,7 @@ pub enum Tok {
     Semi,
     Arrow,
     DotDot,
+    Dot,
     Backslash,
     Assign,
     Plus,
@@ -151,11 +154,36 @@ pub fn lex(src: &str) -> Result<Vec<Token>, Error> {
             while i < chars.len() && (chars[i].is_ascii_digit() || chars[i] == '_') {
                 i += 1;
             }
+            let digit_at = |k: usize| chars.get(k).is_some_and(|c| c.is_ascii_digit());
+            let mut is_float = false;
+            // `1.5` is a float; `1..5` is a range and `1.` is not a number.
+            if chars.get(i) == Some(&'.') && digit_at(i + 1) {
+                is_float = true;
+                i += 1;
+                while i < chars.len() && (chars[i].is_ascii_digit() || chars[i] == '_') {
+                    i += 1;
+                }
+            }
+            if matches!(chars.get(i), Some('e' | 'E')) {
+                let sign = matches!(chars.get(i + 1), Some('+' | '-')) as usize;
+                if digit_at(i + 1 + sign) {
+                    is_float = true;
+                    i += 1 + sign;
+                    while i < chars.len() && chars[i].is_ascii_digit() {
+                        i += 1;
+                    }
+                }
+            }
             let text: String = chars[start..i].iter().filter(|&&c| c != '_').collect();
-            let n = text
-                .parse::<i64>()
-                .map_err(|_| Error::at(line, format!("integer literal `{text}` is too large")))?;
-            out.push(Token { tok: Tok::Int(n), line });
+            let tok = if is_float {
+                Tok::Float(text.parse::<f64>().map_err(|_| Error::at(line, format!("invalid float literal `{text}`")))?)
+            } else {
+                Tok::Int(
+                    text.parse::<i64>()
+                        .map_err(|_| Error::at(line, format!("integer literal `{text}` is too large")))?,
+                )
+            };
+            out.push(Token { tok, line });
             continue;
         }
         if c.is_alphabetic() || c == '_' {
@@ -166,6 +194,7 @@ pub fn lex(src: &str) -> Result<Vec<Token>, Error> {
             let word: String = chars[start..i].iter().collect();
             let tok = match word.as_str() {
                 "fn" => Tok::Fn,
+                "type" => Tok::Type,
                 "be" => Tok::Be,
                 "mut" => Tok::Mut,
                 "if" => Tok::If,
@@ -192,6 +221,7 @@ pub fn lex(src: &str) -> Result<Vec<Token>, Error> {
             ('|', Some('|')) => (Tok::OrOr, 2),
             ('|', _) => (Tok::Pipe, 1),
             ('\\', _) => (Tok::Backslash, 1),
+            ('.', _) => (Tok::Dot, 1),
             ('(', _) => (Tok::LParen, 1),
             (')', _) => (Tok::RParen, 1),
             ('{', _) => (Tok::LBrace, 1),

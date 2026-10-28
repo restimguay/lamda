@@ -8,7 +8,7 @@ fn fold(xs: &[i64], init: i64, f: impl Fn(i64, i64) -> i64) -> i64 {
 }
 
 fn main() {
-    let n: i64 = std::hint::black_box(1_000_000);
+    let n: i64 = 1_000_000;
     let xs: Vec<i64> = (0..n).collect();
     let mut total = 0;
     for round in 0..300 {

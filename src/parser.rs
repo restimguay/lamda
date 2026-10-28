@@ -4,13 +4,17 @@ use crate::ast::*;
 use crate::lexer::{Tok, Token};
 use crate::Error;
 
-pub fn parse(tokens: Vec<Token>) -> Result<Vec<Func>, Error> {
+pub fn parse(tokens: Vec<Token>) -> Result<Program, Error> {
     let mut p = Parser { tokens, pos: 0 };
-    let mut funcs = Vec::new();
+    let mut program = Program::default();
     while p.peek() != &Tok::Eof {
-        funcs.push(p.func()?);
+        if p.peek() == &Tok::Type {
+            program.structs.push(p.struct_def()?);
+        } else {
+            program.funcs.push(p.func()?);
+        }
     }
-    Ok(funcs)
+    Ok(program)
 }
 
 /// Desugars `value | rhs`: `x | f` is `f(x)`, `x | f(a)` is `f(x, a)`, and any other
@@ -84,8 +88,27 @@ impl Parser {
         }
     }
 
+    /// `<A, B>` after a declaration's name, if present.
+    fn type_params(&mut self) -> Result<Vec<String>, Error> {
+        let mut params = Vec::new();
+        if self.eat(&Tok::Lt) {
+            while self.peek() != &Tok::Gt {
+                params.push(self.ident()?);
+                if !self.eat(&Tok::Comma) {
+                    break;
+                }
+            }
+            self.expect(Tok::Gt, "`>`")?;
+        }
+        Ok(params)
+    }
+
     fn ty(&mut self) -> Result<Type, Error> {
-        let line = self.line();
+        if self.eat(&Tok::LBracket) {
+            let elem = self.ty()?;
+            self.expect(Tok::RBracket, "`]`")?;
+            return Ok(Type::array(elem));
+        }
         if self.eat(&Tok::Fn) {
             self.expect(Tok::LParen, "`(`")?;
             let mut params = Vec::new();
@@ -99,21 +122,55 @@ impl Parser {
             let ret = if self.eat(&Tok::Arrow) { self.ty()? } else { Type::Unit };
             return Ok(Type::Fn(Rc::new(FnSig { params, ret })));
         }
-        match self.ident()?.as_str() {
-            "int" => Ok(Type::Int),
-            "bool" => Ok(Type::Bool),
-            "arr" => Ok(Type::Arr),
-            "bytes" => Ok(Type::Bytes),
-            "str" => Ok(Type::Str),
-            "re" => Ok(Type::Regex),
-            other => Err(Error::at(line, format!("unknown type `{other}`"))),
+        Ok(match self.ident()?.as_str() {
+            "int" => Type::Int,
+            "float" => Type::Float,
+            "bool" => Type::Bool,
+            "arr" => Type::array(Type::Int),
+            "bytes" => Type::Bytes,
+            "str" => Type::Str,
+            "re" => Type::Regex,
+            name => {
+                let mut args = Vec::new();
+                if self.eat(&Tok::Lt) {
+                    while self.peek() != &Tok::Gt {
+                        args.push(self.ty()?);
+                        if !self.eat(&Tok::Comma) {
+                            break;
+                        }
+                    }
+                    self.expect(Tok::Gt, "`>`")?;
+                }
+                Type::Named(name.into(), args)
+            }
+        })
+    }
+
+    /// `type Name<A> { field: T, ... }`
+    fn struct_def(&mut self) -> Result<StructDef, Error> {
+        let line = self.line();
+        self.expect(Tok::Type, "`type`")?;
+        let name = self.ident()?;
+        let params = self.type_params()?;
+        self.expect(Tok::LBrace, "`{`")?;
+        let mut fields = Vec::new();
+        while self.peek() != &Tok::RBrace {
+            let field = self.ident()?;
+            self.expect(Tok::Colon, "`:`")?;
+            fields.push((field, self.ty()?));
+            if !self.eat(&Tok::Comma) {
+                break;
+            }
         }
+        self.expect(Tok::RBrace, "`}`")?;
+        Ok(StructDef { name, params, fields, line })
     }
 
     fn func(&mut self) -> Result<Func, Error> {
         let line = self.line();
         self.expect(Tok::Fn, "`fn`")?;
         let name = self.ident()?;
+        let type_params = self.type_params()?;
         self.expect(Tok::LParen, "`(`")?;
         let mut params = Vec::new();
         while self.peek() != &Tok::RParen {
@@ -127,7 +184,7 @@ impl Parser {
         self.expect(Tok::RParen, "`)`")?;
         let ret = if self.eat(&Tok::Arrow) { self.ty()? } else { Type::Unit };
         let body = self.block()?;
-        Ok(Func { name, params, ret, body, line })
+        Ok(Func { name, type_params, params, ret, body, line })
     }
 
     fn block(&mut self) -> Result<Block, Error> {
@@ -142,10 +199,11 @@ impl Parser {
                     self.advance();
                     let mutable = self.eat(&Tok::Mut);
                     let name = self.ident()?;
+                    let ty = if self.eat(&Tok::Colon) { Some(self.ty()?) } else { None };
                     self.expect(Tok::Assign, "`=`")?;
                     let value = self.expr()?;
                     self.expect(Tok::Semi, "`;`")?;
-                    stmts.push(Stmt::Let { name, mutable, value, line });
+                    stmts.push(Stmt::Let { name, mutable, ty, value, line });
                 }
                 Tok::While => {
                     self.advance();
@@ -167,13 +225,7 @@ impl Parser {
                     if self.eat(&Tok::Assign) {
                         let value = self.expr()?;
                         self.expect(Tok::Semi, "`;`")?;
-                        stmts.push(match e.kind {
-                            ExprKind::Var(name) => Stmt::Assign { name, value, line },
-                            ExprKind::Index(arr, index) => {
-                                Stmt::IndexAssign { arr: *arr, index: *index, value, line }
-                            }
-                            _ => return Err(Error::at(line, "invalid assignment target")),
-                        });
+                        stmts.push(Stmt::Assign { target: e, value, line });
                     } else if self.eat(&Tok::Semi) {
                         stmts.push(Stmt::Expr(e));
                     } else if self.peek() == &Tok::RBrace {
@@ -264,6 +316,8 @@ impl Parser {
                 kind
             } else if self.eat(&Tok::LParen) {
                 ExprKind::CallExpr(Box::new(e), self.args()?)
+            } else if self.eat(&Tok::Dot) {
+                ExprKind::Field(Box::new(e), self.ident()?)
             } else {
                 return Ok(e);
             };
@@ -288,6 +342,7 @@ impl Parser {
         let line = self.line();
         let kind = match self.advance() {
             Tok::Int(n) => ExprKind::Int(n),
+            Tok::Float(x) => ExprKind::Float(x),
             Tok::Str(bytes) => ExprKind::Str(bytes),
             Tok::Regex(pattern) => ExprKind::Regex(pattern),
             Tok::True => ExprKind::Bool(true),
@@ -317,6 +372,17 @@ impl Parser {
                 }
                 self.expect(Tok::Arrow, "`->`")?;
                 ExprKind::Lambda(params, Box::new(self.expr()?))
+            }
+            Tok::LBracket => {
+                let mut items = Vec::new();
+                while self.peek() != &Tok::RBracket {
+                    items.push(self.expr()?);
+                    if !self.eat(&Tok::Comma) {
+                        break;
+                    }
+                }
+                self.expect(Tok::RBracket, "`]`")?;
+                ExprKind::Array(items)
             }
             Tok::LBrace => {
                 self.pos -= 1;

@@ -3,5 +3,5 @@ fn fib(n: i64) -> i64 {
 }
 
 fn main() {
-    println!("{}", fib(std::hint::black_box(40)));
+    println!("{}", fib(40));
 }

@@ -1,0 +1,27 @@
+// Count the points of a 1600x1200 grid inside the Mandelbrot set (200 iterations).
+fn main() {
+    be w = 1600;
+    be h = 1200;
+    be mut inside = 0;
+    be mut y = 0;
+    while y < h {
+        be ci = float(y) * 2.0 / float(h) - 1.0;
+        be mut x = 0;
+        while x < w {
+            be cr = float(x) * 3.0 / float(w) - 2.0;
+            be mut zr = 0.0;
+            be mut zi = 0.0;
+            be mut i = 0;
+            while i < 200 && zr * zr + zi * zi <= 4.0 {
+                be t = zr * zr - zi * zi + cr;
+                zi = 2.0 * zr * zi + ci;
+                zr = t;
+                i = i + 1;
+            }
+            if i == 200 { inside = inside + 1; }
+            x = x + 1;
+        }
+        y = y + 1;
+    }
+    print(inside);
+}

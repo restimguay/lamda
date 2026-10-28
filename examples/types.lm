@@ -1,0 +1,51 @@
+// Structs, generic structs, typed arrays and generic functions.
+
+type Point { x: float, y: float }
+type Pair<A, B> { first: A, second: B }
+type Team { name: str, members: [str], scores: [int] }
+
+fn dist(a: Point, b: Point) -> float {
+    sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y))
+}
+
+fn map<T, U>(xs: [T], f: fn(T) -> U) -> [U] {
+    be out: [U] = array(len(xs));
+    be mut i = 0;
+    while i < len(xs) { out[i] = f(xs[i]); i = i + 1; }
+    out
+}
+
+fn fold<T, A>(xs: [T], init: A, f: fn(A, T) -> A) -> A {
+    be mut acc = init;
+    be mut i = 0;
+    while i < len(xs) { acc = f(acc, xs[i]); i = i + 1; }
+    acc
+}
+
+fn swap<A, B>(p: Pair<A, B>) -> Pair<B, A> { Pair(p.second, p.first) }
+
+fn main() {
+    be mut p = Point(3.0, 4.0);
+    print(dist(Point(0.0, 0.0), p));                      // 5.0
+    p.x = 6.0;                                            // structs are values; `be mut` to change
+    print(p);                                             // Point { x: 6.0, y: 4.0 }
+
+    be words = "the quick brown fox" | split(" ");
+    print(words);                                         // ["the", "quick", "brown", "fox"]
+    print(map(words, \w: str -> len(w)));                 // [3, 5, 5, 3]
+    print(words | map(\w: str -> w + "!") | join(" "));   // the! quick! brown! fox!
+    print(fold(words, 0, \n, w: str -> n + len(w)));      // 16
+
+    be pts = [Point(1.0, 1.0), Point(2.0, 2.0)];
+    pts[1].y = 9.5;                                       // array elements change in place
+    print(pts);                                           // [Point { x: 1.0, y: 1.0 }, Point { x: 2.0, y: 9.5 }]
+    print(pts[0] == Point(1.0, 1.0));                     // true
+
+    be pair = Pair("age", 42);
+    print(swap(pair));                                    // Pair { first: 42, second: "age" }
+
+    be team = Team("blue", ["ana", "bo"], [7, 9]);
+    team.scores[0] = 8;                                   // arrays are shared, even inside a struct value
+    print(team);                                          // Team { name: "blue", members: ["ana", "bo"], scores: [8, 9] }
+    print(str([[1, 2], [3]]) + " " + str(["a" < "b", "b" < "a"]));   // [[1, 2], [3]] [true, false]
+}

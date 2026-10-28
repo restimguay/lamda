@@ -25,7 +25,7 @@ PY
 }
 
 printf "%-8s %12s %12s %20s\n" bench lamda rust "rust (native cpu)"
-for name in ${BENCHES:-fib sieve sieve8 gather closure wc strfind strsum alloc recount resum realt reword}; do
+for name in ${BENCHES:-fib sieve sieve8 gather closure mandel wc strfind strsum alloc recount resum realt reword}; do
     $LAMDA build "$name.lm" -o "$OUT/$name-lm"
     if [ -f "$name.rs" ]; then
         rustc -C opt-level=3 -C panic=abort -o "$OUT/$name-rs" "$name.rs"

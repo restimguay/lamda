@@ -13,6 +13,9 @@
       "include": "#regex"
     },
     {
+      "include": "#type-definition"
+    },
+    {
       "include": "#function-definition"
     },
     {
@@ -29,6 +32,9 @@
     },
     {
       "include": "#type-annotation"
+    },
+    {
+      "include": "#type-name"
     },
     {
       "include": "#call"
@@ -120,13 +126,13 @@
       "name": "constant.language.boolean.lamda"
     },
     "builtin-type": {
-      "match": "\\b(int|bool|arr|bytes|str|re)\\b",
+      "match": "\\b(int|float|bool|arr|bytes|str|re)\\b",
       "name": "support.type.primitive.lamda"
     },
     "type-annotation": {
       "patterns": [
         {
-          "match": "(:|->)\\s*(int|bool|arr|bytes|str|re)\\b",
+          "match": "(:|->)\\s*(int|float|bool|arr|bytes|str|re)\\b",
           "captures": {
             "1": {
               "name": "punctuation.separator.type.lamda"
@@ -138,7 +144,7 @@
         },
         {
           "comment": "Types inside function types, e.g. fn(int, bytes) -> int",
-          "match": "(?<=[(,])\\s*(int|bool|arr|bytes|str|re)\\b(?=\\s*[,)])",
+          "match": "(?<=[(,\\[<])\\s*(int|float|bool|arr|bytes|str|re)\\b(?=\\s*[,)\\]>])",
           "captures": {
             "1": {
               "name": "support.type.primitive.lamda"
@@ -150,7 +156,7 @@
     "call": {
       "patterns": [
         {
-          "match": "\\b(print|array|bytes|len|str|parse|read_file|find|matches|extract|count|fold_matches)\\s*(?=\\()",
+          "match": "\\b(print|array|bytes|len|str|parse|read_file|find|matches|extract|count|fold_matches|float|int|sqrt|floor|ceil|round|abs|sin|cos|exp|ln|pow|min|max|split|join|captures|all_captures|all_matches|replace)\\s*(?=\\()",
           "captures": {
             "1": {
               "name": "support.function.builtin.lamda"
@@ -168,7 +174,7 @@
       ]
     },
     "number": {
-      "match": "\\b\\d[\\d_]*\\b",
+      "match": "\\b\\d[\\d_]*(\\.\\d[\\d_]*)?([eE][+-]?\\d+)?\\b",
       "name": "constant.numeric.integer.lamda"
     },
     "operator": {
@@ -252,6 +258,21 @@
           "name": "punctuation.definition.group.regexp.lamda"
         }
       ]
+    },
+    "type-definition": {
+      "match": "\\b(type)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "storage.type.struct.lamda"
+        },
+        "2": {
+          "name": "entity.name.type.lamda"
+        }
+      }
+    },
+    "type-name": {
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b",
+      "name": "entity.name.type.lamda"
     }
   }
 }

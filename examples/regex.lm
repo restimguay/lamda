@@ -1,4 +1,5 @@
-// Regex literals are written in backticks and compiled to DFAs ahead of time.
+// Regex literals are written in backticks and compiled ahead of time, with the
+// same syntax and matching rules as Rust's `regex` crate.
 
 fn add_number(total: int, m: str) -> int { total + parse(m) }
 
@@ -10,14 +11,23 @@ fn main() {
     print(log | find(`ERROR|WARN`));                    // 29
     print(log | extract(`user=\d+ status=5\d\d`));      // user=9 status=503
 
-    // Sum every `ms=` value: fold over the matches with a named function or a lambda.
+    // Fold over every match with a lambda or a named function.
     print(log | fold_matches(`ms=\d+`, 0, \acc, m: str -> acc + parse(m[3..])));  // 587
     print("10,20,x,30" | fold_matches(`\d+`, 0, add_number));                       // 60
 
-    // Regexes are values: pass them around like anything else.
+    // Capture groups, named groups and replacement.
+    print("released 2026-10-28" | captures(`(?P<y>\d{4})-(?P<m>\d\d)-(\d\d)`));  // ["2026-10-28", "2026", "10", "28"]
+    print("2026-10-28 and 1999-01-02" | replace(`(?P<y>\d{4})-(\d\d)-(\d\d)`, "$3/$2/${y}"));  // 28/10/2026 and 02/01/1999
+    print(log | all_captures(`user=(\d+) status=(\d+)`) | len);   // 3
+
+    // Lazy quantifiers, word boundaries, multi-line anchors, case folding, Unicode.
+    print("<a><b>" | extract(`<.+?>`));                 // <a>
+    print("cat concat cat" | count(`\bcat\b`));          // 2
+    print(log | all_matches(`(?m)^\w+`));                // ["INFO", "ERROR", "WARN"]
+    print("Straße STRASSE" | all_matches(`(?i)stra(ß|ss)e`));   // ["Straße", "STRASSE"]
+    print("naïve café" | all_matches(`\w+`));            // ["naïve", "café"]
+
     be level = `^(INFO|WARN|ERROR) `;
     print("WARN disk" | matches(level));                // true
-    print("note: WARN" | matches(level));               // false: `^` anchors to the start
-    print("a1b22c333" | extract(`[a-z]\d{3}$`));        // c333
-    print("no digits here" | find(`\d`));               // -1
+    print(level);                                       // `^(INFO|WARN|ERROR) `
 }

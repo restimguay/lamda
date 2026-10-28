@@ -1,7 +1,7 @@
 // Data-dependent indexing: the index comes from another array, so a
 // bounds-checked language cannot prove the access is in range.
 fn main() {
-    let n: i64 = std::hint::black_box(1_048_576);
+    let n: i64 = 1_048_576;
     let mut perm = vec![0i64; n as usize];
     let mut vals = vec![0i64; n as usize];
     for i in 0..n {
